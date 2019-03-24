@@ -392,7 +392,7 @@ class Board{
                     }
                     for (let r = pos.row - 1; r >= 0; --r){
                         if (this.board[pos.col][r].piece === false){
-                            moveList.push(moveList.push(new Move(pieceList[i], pos.col, r));
+                            moveList.push(new Move(pieceList[i], pos.col, r));
                         }else if(this.board[pos.col][r].piece.color !== color){
                             moveList.push(new Move(pieceList[i], pos.col,r, this.board[pos.col][r].piece));
                             break;
