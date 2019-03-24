@@ -1,0 +1,83 @@
+.line{
+    clear: both;
+}
+#board{
+    font-size: 40px;
+}
+p{
+
+}
+.board{
+    width: 775px;
+    height: 775px;
+    border: 4px;
+    background-image: url("images/chess_board.webp");
+}
+.square{
+    width: 97px;
+    height: 97px;
+    border: 0px;
+    padding: 0px;
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+
+}
+.piece{
+    width: 97px;
+    height: 97px;
+    border: 0px;
+    padding: 0px;
+}
+.A.B.C.D.E.F.G.H{
+    float: left;
+    display: flex;
+    flex-direction: row;
+}
+.B{
+    margin-left: 97px;
+}
+.C{
+    margin-left: 194px;
+}
+.D{
+    margin-left: 291px;
+}
+.E{
+    margin-left: 388px;
+}
+.F{
+    margin-left: 485px;
+}
+.G{
+    margin-left: 582px;
+}
+.H{
+    margin-left: 679px;
+}
+/*height*/
+.one.two.three.four.five.six.seven.eight{
+    display: flex;
+    flex-direction: column;
+}
+.two{
+    margin-top: 97px;
+}
+.three{
+    margin-top: 194px;
+}
+.four{
+    margin-top: 291px;
+}
+.five{
+    margin-top: 388px;
+}
+.six{
+    margin-top: 485px;
+}
+.seven{
+    margin-top: 582px;
+}
+.eight{
+    margin-top: 679px;
+}
