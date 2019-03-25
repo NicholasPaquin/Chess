@@ -5,6 +5,7 @@ class Board {
             color: "white",
             move: 1
         };
+        this.displayBoard = displayBoard;
         this.board = new Array(8);
         this.prevMoves = [];
         this.alphabet = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -19,14 +20,12 @@ class Board {
         this.blackMoves = [];
 
         //starting to create a board
-        console.log(this.board.length);
         for (let i = 0; i < 8; i++) {
             this.board[i] = new Array(8);
         }
         this.initBoard();
         this.definePieces();
         this.populateBoard();
-        console.log(this.board);
         if (displayBoard) {
             this.drawBoard();
         }
@@ -552,18 +551,23 @@ class Board {
             this.drawBoard();
         }
     }
+    resetBoard(board){
+        this.board = Object.assign(Object.create(Object.getPrototypeOf(board.board)), board.board)
+    }
 
     removeChecks() {
         let illegalCastle = false;
         let testBoard = new Board(false);
         testBoard.copyBoard(this);
-        let moves, cRow, oppColor;
+        let moves,realMoves, cRow, oppColor;
         if (testBoard.turn.color === "white") {
             moves = testBoard.whiteMoves;
+            realMoves = this.whiteMoves;
             oppColor = 'black';
             cRow = 7;
         }else{
             moves = testBoard.blackMoves;
+            realMoves = this.blackMoves;
             oppColor = 'white';
             cRow = 0;
         }
@@ -587,16 +591,16 @@ class Board {
                     }
                 }
             }else {
-                let nSquare = testBoard.board[col][row];
-                let oSquare = testBoard.board[prevPos.col][prevPos.row];
-                nSquare.piece = Object.assign(Object.create(Object.getPrototypeOf(moves[k].piece)), moves[k].piece);
-                oSquare.piece = false;
+                testBoard.makeMove(moves[k]);
             }
            testBoard.moveFinder();
             if (testBoard.computer.isCheck() || illegalCastle) {
                 moves.splice(k, 1);
+                realMoves.splice(k, 1);
                 k--;
             }
+            testBoard.resetBoard(this);
+
         }
     }
 
@@ -605,19 +609,32 @@ class Board {
         this.removeChecks();
         console.log("moves found");
     }
-    makeMove(move){
+    makeMove(move, color=false){
         let pieces, oppPieces, cRow;
         let col = move.col;
         let row = move.row;
         let prevPos = move.piece.pos;
-        if (this.turn.color === "white"){
-            pieces = this.whitePieces;
-            oppPieces = this.blackPieces;
-            cRow = 7;
-        }else{
-            pieces = this.blackPieces;
-            oppPieces = this.whitePieces;
-            cRow = 0;
+
+        if (color){
+            if (color === "white") {
+                pieces = this.whitePieces;
+                oppPieces = this.blackPieces;
+                cRow = 7;
+            } else {
+                pieces = this.blackPieces;
+                oppPieces = this.whitePieces;
+                cRow = 0;
+            }
+        }else {
+            if (this.turn.color === "white") {
+                pieces = this.whitePieces;
+                oppPieces = this.blackPieces;
+                cRow = 7;
+            } else {
+                pieces = this.blackPieces;
+                oppPieces = this.whitePieces;
+                cRow = 0;
+            }
         }
         if(move.capture){
             for (let i in oppPieces){
@@ -669,6 +686,9 @@ class Board {
             }
         }
     }
+    appendMoveList(move){
+        this.prevMoves.unshift(new PrevMove(move, this.turn));
+    }
 }
 
 class Piece {
@@ -710,5 +730,15 @@ class Move {
         } else {
             this.staleMate = false;
         }
+    }
+}
+class PrevMove {
+    constructor(move, turn){
+        this.move = Object.assign(Object.create(Object.getPrototypeOf(move)), move);
+        this.turn = turn;
+        this.text = "";
+    }
+    createText(){
+
     }
 }
