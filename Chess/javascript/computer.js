@@ -1,68 +1,66 @@
 class Computer {
-    constructor(color, level, board){
-        this.color = color;
-        this.level = level;
-        this.lines = [];
-        this.evaluation = 0;
-        this.board = board;
-    }
-    materialEval(pieceList){
-        var mat = 0;
-        for(var i in pieceList){
-            mat += pieceList[i].material;
-        }
-        return mat;
-    }
-    analyze(useBoard, pieceListWhite, pieceListBlack, legalMovesWhite, legalMovesBlack){
-        let materialDiff = 0;
-        materialDiff = this.materialEval(pieceListWhite) - this.materialEval(pieceListBlack);
-        console.log("The difference in material is: " + materialDiff);
-        this.evaluation = materialDiff;
-
-    }
-    isKingSafe(useBoard, pieceListWhite, pieceListBlack, moveListWhite, moveListBlack){
-        if (this.color == "white"){
-            var pieces = pieceListWhite;
-            var piecesOpp = pieceListBlack;
-            var legalMoves = moveListWhite;
-            var legalMovesOpp = moveListBlack;
-            var colorOpp = "black";
-        }else{
-            var pieces = pieceListBlack;
-            var piecesOpp = pieceListBlack;
-            var legalMoves = moveListBlack;
-            var legalMovesOpp = moveListWhite;
-            var colorOpp = "white";
-        }
-        for (var i in pieces){
-            if(pieces[i].piece == "k"){
-                var king = pieces[i];
-                break;
+            constructor(board){
+                this.lines = [];
+                this.evaluation = 0;
+                this.board = board;
             }
-        }
-        pieceDetect(useBoard, pieceListWhite, pieceListBlack);
-        movesDetect(pieces, legalMoves, this.color, useBoard, false);
-        movesDetect(piecesOpp, legalMovesOpp, colorOpp, useBoard, false);
-        var beforeMoves = legalMoves.length;
-        removeCheck(this.color, true);
-        var afterMoves = legalMoves.length;
-        if (this.turn){
-            if(this.color == "white"){
-                var testingBoard = Array[8];
-                for (var k in testingBoard){
-                    testingBoard[k] = Array[8];
+            materialEval(pieceList){
+                let mat = 0;
+                for(let i in pieceList){
+                    mat += pieceList[i].material;
                 }
-                initBoard(testingBoard);
-                copyBoard(useBoard, testingBoard);
-            }else{
+                return mat;
+            }
+            analyze(){
+                let materialDiff = 0;
+                materialDiff = this.materialEval(this.board.whitePieces) - this.materialEval(this.board.blackPieces);
+                console.log("The difference in material is: " + materialDiff);
+                this.evaluation = materialDiff;
 
             }
-            for (var i in legalMoves){
-                movesDetect()
-            }
-        }
-        var safety = beforeMoves - afterMoves;
-        return safety;//0 is the most safe
+            isKingSafe(){
+                if (this.board.turn.color === "white"){
+                    let pieces = this.board.whitePieces;
+                    let piecesOpp = this.board.blackPieces;
+                    let legalMoves = this.board.whiteMoves;
+                    let legalMovesOpp = this.board.blackMoves;
+                    let colorOpp = "black";
+                }else{
+                    let pieces = pieceListBlack;
+                    let piecesOpp = pieceListBlack;
+                    let legalMoves = moveListBlack;
+                    let legalMovesOpp = moveListWhite;
+                    let colorOpp = "white";
+                }
+                for (let i in pieces){
+                    if(pieces[i].piece === "k"){
+                        let king = pieces[i];
+                        break;
+                    }
+                }
+                pieceDetect(useBoard, pieceListWhite, pieceListBlack);
+                movesDetect(pieces, legalMoves, this.color, useBoard, false);
+                movesDetect(piecesOpp, legalMovesOpp, colorOpp, useBoard, false);
+                let beforeMoves = legalMoves.length;
+                removeCheck(this.color, true);
+                let afterMoves = legalMoves.length;
+                if (this.turn){
+                    if(this.color == "white"){
+                        let testingBoard = Array[8];
+                        for (let k in testingBoard){
+                            testingBoard[k] = Array[8];
+                        }
+                        initBoard(testingBoard);
+                        copyBoard(useBoard, testingBoard);
+                    }else{
+
+                    }
+                    for (let i in legalMoves){
+                        movesDetect()
+                    }
+                }
+                let safety = beforeMoves - afterMoves;
+                return safety;//0 is the most safe
 
     }
     isProfitableToAttack(useBoard, piece, moveList, moveListOpp){
@@ -80,7 +78,7 @@ class Computer {
     }
     pawnStructure(useBoard, pieceList, moveList, moveListOpp){
         //returns a score based on pawn position, how many pawn islands, how well defended, pins, any passed pawns??
-        for (var i in pieceList){
+        for (let i in pieceList){
             if (pieceList[i].piece == "p"){
                 if (this.isDefended(pieceList[i], moveList) && !this.isAttacked(pieceList[i], moveListOpp)){
 
@@ -95,14 +93,14 @@ class Computer {
 
         //function will run through moves on a test board and add them to lines
         //after analysis of each line the lines that are unsuitable will be appended
-        var moves;
-        var legalMoves;
-        var legalMovesOpp;
-        var pieces;
-        var pieceList;
-        var pieceListOpp;
-        var turn;
-        var colorOpp;
+        let moves;
+        let legalMoves;
+        let legalMovesOpp;
+        let pieces;
+        let pieceList;
+        let pieceListOpp;
+        let turn;
+        let colorOpp;
         if (this.color == "white"){
             moves = legalMovesWhite;
             pieces = piecesWhite;
@@ -122,7 +120,7 @@ class Computer {
         }
         pieceDetect(board, piecesWhite, piecesBlack);
         movesDetect(pieces, moves, this.color, board, false);
-        for (var i in moves){
+        for (let i in moves){
             testPiecesWhite.length = 0;
             testPiecesBlack.length = 0;
             testLegalMovesWhite.length = 0;
@@ -147,24 +145,58 @@ class Computer {
             }
         }
     }
-    isDefended(piece, legalMoves){
-        for (var n in legalMovesOpp){
-            if (legalMoves[n].piece.col == piece.col && legalMoves[n].piece.row == piece.row){
+    isDefended(col, row, color){
+        let moves;
+        if (color === "white"){
+            moves = this.board.whitePieces;
+        }else{
+            moves = this.board.blackPieces;
+        }
+        for (let i in moves){
+            if(moves[i].piece.col === col && moves[i].piece.row === row){
                 return true;
             }
         }
         return false;
     }
-    isAttacked(piece, legalMovesOpp){
-        for (var i in legalMovesOpp){
-            if(legalMovesOpp[i].piece.col == piece.col && legalMovesOpp[i].piece.row == piece.row){
+    //color will determine whose pieces are attacking that square
+    isAttacked(col, row, color){
+        let moves;
+        if (color === "white"){
+            moves = this.board.whitePieces;
+        }else{
+            moves = this.board.blackPieces;
+        }
+        for (let i in moves){
+            if(moves[i].piece.col === col && moves[i].piece.row === row){
                 return true;
             }
         }
         return false;
+    }
+    isCheck(){
+        let pieces, oppMoves;
+        if (this.board.turn.color === "white"){
+            this.board.moveFinder("black");
+            pieces = this.board.whitePieces;
+            oppMoves = this.board.blackMoves;
+        }else{
+            this.board.moveFinder("white");
+            pieces = this.board.blackPieces;
+            oppMoves = this.board.whiteMoves;
+        }
+        for (let i in pieces){
+            if (pieces[i].piece === "K"){
+                for (let j in oppMoves){
+                    if (oppMoves[j].capture === pieces[i]){
+                        return true;
+                    }
+                }
+            }
+        }
     }
     countAttackers(legalMoves, piece){
-        var attackers = {
+        let attackers = {
             count: 0,
             moves: []
         };
@@ -177,19 +209,19 @@ class Computer {
         return attackers;
     }
     countDefenders(piece, pieceList, legalMoves, useBoard, color){
-        var defenders = {
+        let defenders = {
             count: 0,
             moves: []
         };
-        var col = piece.col;
-        var row = piece.row;
-        var testerBoard = useBoard;
-        var testerMoves = [];
-        var square = testerBoard[col][row];
+        let col = piece.col;
+        let row = piece.row;
+        let testerBoard = useBoard;
+        let testerMoves = [];
+        let square = testerBoard[col][row];
         square.piece = false;
         square.pieceColor = "default";
         movesDetect(pieceList, testerMoves, color, testerBoard, false);
-        for (var i in testerMoves){
+        for (let i in testerMoves){
             if (testerMoves[i].col == col && testerMoves.row == row){
                 defenders.count ++;
                 defenders.moves.append(testerMoves[i]);
@@ -211,11 +243,11 @@ class Computer {
 
     }
     bestMove(){
-        var legalMoves;
-        var legalMovesOpp;
-        var pieces;
-        var piecesOpp;
-        var move;
+        let legalMoves;
+        let legalMovesOpp;
+        let pieces;
+        let piecesOpp;
+        let move;
         if (this.color == "white"){
             legalMoves = legalMovesWhite;
             legalMovesOpp = legalMovesBlack;
@@ -229,14 +261,14 @@ class Computer {
         }
         removeCheck("white", false);
         removeCheck("black", false);
-        for (var k in pieces){
-            for (var i in legalMoves){
-                var lm = legalMoves[i];
-                var p = pieces[k];
+        for (let k in pieces){
+            for (let i in legalMoves){
+                let lm = legalMoves[i];
+                let p = pieces[k];
                 if (lm.piece.piece == p.piece && lm.piece.col == p.col && lm.piece.row == p.row){
                     if(lm.captures){
-                        for (var j in piecesOpp){
-                            var next = lines.length;
+                        for (let j in piecesOpp){
+                            let next = lines.length;
                             if(!isDefended(piecesOpp[j], legalMovesOpp)){
                                 lines[next].push(new Array[2]);
                                 lines[next][0] = {
@@ -256,7 +288,7 @@ class Computer {
                             }
                         }
                     }else{
-                        var wellThen = (Math.random() * legalMoves.length) - 1;
+                        let wellThen = (Math.random() * legalMoves.length) - 1;
                         lines[next].push(new Array[2]);
                         lines[next][0] = {
                             eval: analyze(),
