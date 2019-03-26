@@ -60,24 +60,24 @@ p{
     display: flex;
     flex-direction: column;
 }
-.two{
+.seven{
     margin-top: 97px;
 }
-.three{
+.six{
     margin-top: 194px;
 }
-.four{
+.five{
     margin-top: 291px;
 }
-.five{
+.four{
     margin-top: 388px;
 }
-.six{
+.three{
     margin-top: 485px;
 }
-.seven{
+.two{
     margin-top: 582px;
 }
-.eight{
+.one{
     margin-top: 679px;
 }

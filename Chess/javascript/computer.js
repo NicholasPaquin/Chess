@@ -174,16 +174,28 @@ class Computer {
         }
         return false;
     }
-    isCheck(){
+    isCheck(color=false){
         let pieces, oppMoves;
-        if (this.board.turn.color === "white"){
-            this.board.moveFinder("black");
-            pieces = this.board.whitePieces;
-            oppMoves = this.board.blackMoves;
-        }else{
-            this.board.moveFinder("white");
-            pieces = this.board.blackPieces;
-            oppMoves = this.board.whiteMoves;
+        if (color){
+            if (color === "white") {
+                this.board.moveFinder("black");
+                pieces = this.board.whitePieces;
+                oppMoves = this.board.blackMoves;
+            } else {
+                this.board.moveFinder("white");
+                pieces = this.board.blackPieces;
+                oppMoves = this.board.whiteMoves;
+            }
+        }else {
+            if (this.board.turn.color === "white") {
+                this.board.moveFinder("black");
+                pieces = this.board.whitePieces;
+                oppMoves = this.board.blackMoves;
+            } else {
+                this.board.moveFinder("white");
+                pieces = this.board.blackPieces;
+                oppMoves = this.board.whiteMoves;
+            }
         }
         for (let i in pieces){
             if (pieces[i].piece === "K"){

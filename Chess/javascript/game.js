@@ -9,6 +9,7 @@ class Board {
         this.board = new Array(8);
         this.prevMoves = [];
         this.alphabet = ["a", "b", "c", "d", "e", "f", "g", "h"];
+        this.inverseRow = [8, 7, 6, 5, 4, 3, 2, 1];
         this.computer = new Computer(this);
 
         //white piece things
@@ -23,6 +24,9 @@ class Board {
         for (let i = 0; i < 8; i++) {
             this.board[i] = new Array(8);
         }
+        this.startGame(displayBoard);
+    }
+    startGame(displayBoard){
         this.initBoard();
         this.definePieces();
         this.populateBoard();
@@ -60,14 +64,9 @@ class Board {
                 let col = pieceList[i].pos.col;
                 let row = pieceList[i].pos.row;
                 //remember that when doing a move I need to immediately make first move false or else this won't work
-                this.board[col][row].piece = Object.assign(Object.create(Object.getPrototypeOf(pieceList[i])), pieceList[i]);
+                this.board[col][row].piece =  pieceList[i];
             }
         }
-    }
-
-    //removes a piece from a square
-    cleanSquare(col, row) {
-        this.board[col][row].piece = false;
     }
 
     //creates the pieces for the beginning of the game by populating piece lists
@@ -114,6 +113,7 @@ class Board {
 
     //for display board
     drawBoard(board) {
+        this.clearBoard();
         for (let w = 0; w < 8; w++) {
             for (let h = 0; h < 8; h++) {
                 if (this.board[w][h].piece !== false) {
@@ -147,7 +147,8 @@ class Board {
                             docPiece.src = "images/bk.webp";
                         }
                     }
-                    let square = document.getElementById(this.alphabet[w] + (h + 1));
+                    let square = document.getElementById(this.alphabet[w] + (this.inverseRow[h]));
+                    docPiece.id = this.alphabet[w] + (this.inverseRow[h]);
                     if (square != null) {
                         square.appendChild(docPiece);
                     }
@@ -156,9 +157,22 @@ class Board {
         }
     }
 
-    moveFinder(color=false) {
+    clearBoard(){
+        for (let h = 0; h < 8; ++h){
+            for (let w = 0; w < 8; ++w){
+                let square = document.getElementById(this.alphabet[w] + (this.inverseRow[h]));
+                if (square != null){
+                    while(square.firstChild){
+                        square.removeChild(square.firstChild);
+                    }
+                }
+            }
+        }
+    }
+
+    moveFinder(color="none") {
         let moveList, pieceList;
-        if(color){
+        if(color !== "none"){
             if (color === "white") {
                 moveList = this.whiteMoves;
                 pieceList = this.whitePieces;
@@ -175,6 +189,7 @@ class Board {
                 pieceList = this.blackPieces;
             }
         }
+        moveList.length = 0;
         for (let i in pieceList) {
             let piece = pieceList[i].piece;
             let color = pieceList[i].color;
@@ -183,7 +198,7 @@ class Board {
 
             if (piece === "P") {
                 let twoMove, oneMove, enpRow;
-                if (this.turn.color === "white") {
+                if (color === "white") {
                     twoMove = -2;
                     oneMove = -1;
                     enpRow = 1;
@@ -201,8 +216,8 @@ class Board {
                 //capture moves
                 for (let c = pos.col - 1; c <= pos.col + 1; c += 2) {
                     if ((c <= 7 && c >= 0) && (pos.row + oneMove <= 7 && pos.row + oneMove >= 0)) {
-                        if (this.board[c][pos.row + 1].piece && this.board[c][pos.row + oneMove].piece.color !== color) {
-                            moveList.push(new Move(pieceList[i], pos.col, pos.row + oneMove, this.board[c][pos.row + 1].piece));
+                        if (this.board[c][pos.row + oneMove].piece && this.board[c][pos.row + oneMove].piece.color !== color) {
+                            moveList.push(new Move(pieceList[i], c, pos.row + oneMove, this.board[c][pos.row + oneMove].piece));
                         }
                     }
                 }
@@ -210,8 +225,10 @@ class Board {
                 for (let c = pos.col - 1; c <= pos.col + 1; c += 2) {
                     if (pos.row === 3 || pos.row === 4) {
                         if (c <= 7 && c >= 0 && this.board[c][pos.row].piece && this.board[c][pos.row].piece.piece === "P") {
-                            if (this.board[c][pos.row].piece.color !== color && this.board[c][pos.row].piece.prevPos.row === enpRow && this.prevMoves[0].piece === this.board[c][pos.row].piece) {
-                                moveList.push(new Move(pieceList[i], pos.col, pos.row + oneMove, this.board[c][pos.row + oneMove].piece));
+                            if (this.board[c][pos.row].piece.color !== color &&
+                                this.board[c][pos.row].piece.prevPos.row === enpRow &&
+                                this.prevMoves[0].piece === this.board[c][pos.row].piece) {
+                                moveList.push(new Move(pieceList[i], c, pos.row + oneMove, this.board[c][pos.row].piece));
                             }
 
                         }
@@ -230,8 +247,8 @@ class Board {
                     }
                 }
                 for (let r = pos.row - 1; r >= 0; --r) {
-                    moveList.push(new Move(pieceList[i], pos.col, r));
                     if (this.board[pos.col][r].piece === false) {
+                        moveList.push(new Move(pieceList[i], pos.col, r));
                     } else if (this.board[pos.col][r].piece.color !== color) {
                         moveList.push(new Move(pieceList[i], pos.col, r, this.board[pos.col][r].piece));
                         break;
@@ -328,7 +345,7 @@ class Board {
                             moveList.push(new Move(pieceList[i], pos.col - c, pos.row - 1));
                         } else if (pos.row - 1 >= 0 &&
                             this.board[pos.col - c][pos.row - 1].piece &&
-                            this.board[pos.col - c][pos.row - 1].pieceColor !== color) {
+                            this.board[pos.col - c][pos.row - 1].piece.color !== color) {
                             moveList.push(new Move(pieceList[i], pos.col - c, pos.row - 1, this.board[pos.col - c][pos.row - 1].piece));
                         }
                     }
@@ -355,7 +372,7 @@ class Board {
                     if (pos.col - colChange >= 0 && this.board[pos.col - colChange][r].piece === false) {
                         moveList.push(new Move(pieceList[i], pos.col - colChange, r));
                     } else if (pos.col - colChange >= 0 &&
-                        this.board[pos.col + colChange][r].piece &&
+                        this.board[pos.col - colChange][r].piece &&
                         this.board[pos.col - colChange][r].piece.color !== color) {
                         moveList.push(new Move(pieceList[i], pos.col + colChange, r, this.board[pos.col - colChange][r].piece));
                         break;
@@ -544,48 +561,52 @@ class Board {
     copyBoard(board, display) {
         for (let property in this) {
             if (this.hasOwnProperty(property) && board.hasOwnProperty(property)) {
-                this[property] = board[property];
+                if (this[property] === this.whitePieces || this[property] === this.blackPieces){
+                    this[property].length = 0;
+                    for (let i in board[property]){
+                        this[property].push(Object.assign(Object.create(Object.getPrototypeOf(board[property][i])), board[property][i]));
+                    }
+                }else {
+                    this[property] = Object.assign(Object.create(Object.getPrototypeOf(board[property])), board[property]);
+                }
             }
         }
         if (display) {
             this.drawBoard();
         }
     }
-    resetBoard(board){
-        this.board = Object.assign(Object.create(Object.getPrototypeOf(board.board)), board.board)
-    }
 
     removeChecks() {
+        console.log('started removing illegal moves');
         let illegalCastle = false;
         let testBoard = new Board(false);
         testBoard.copyBoard(this);
-        let moves,realMoves, cRow, oppColor;
+        let moves,realMoves, cRow, oppColor, color;
         if (testBoard.turn.color === "white") {
+            color = "white";
             moves = testBoard.whiteMoves;
             realMoves = this.whiteMoves;
             oppColor = 'black';
             cRow = 7;
         }else{
+            color = "black";
             moves = testBoard.blackMoves;
             realMoves = this.blackMoves;
             oppColor = 'white';
             cRow = 0;
         }
         for (let k in moves) {
-            let col = moves[k].col;
-            let row = moves[k].row;
-            let prevPos = moves[k].piece.pos;
             let illegalCastle = false;
             if (moves[k].piece.piece === "K" && moves[k].castle.type === "short") {
                 for (let cols = 4; cols <= 6; ++ cols){
-                    if (this.computer.isAttacked(cols, cRow,oppColor)){
+                    if (testBoard.computer.isAttacked(cols, cRow,oppColor)){
                         illegalCastle = true;
                         break;
                     }
                 }
             } else if (moves[k].piece === "K" && moves[k].castle.type === "long") {
-                for (let col = 4; col <= 2; -- col){
-                    if (this.computer.isAttacked(col, cRow,oppColor)){
+                for (let cols = 4; cols <= 2; -- cols){
+                    if (testBoard.computer.isAttacked(cols, cRow, oppColor)){
                         illegalCastle = true;
                         break;
                     }
@@ -593,13 +614,15 @@ class Board {
             }else {
                 testBoard.makeMove(moves[k]);
             }
-           testBoard.moveFinder();
-            if (testBoard.computer.isCheck() || illegalCastle) {
+            testBoard.moveFinder();
+            if (testBoard.computer.isCheck(color) || illegalCastle) {
+                console.log("removed illegal move");
                 moves.splice(k, 1);
                 realMoves.splice(k, 1);
                 k--;
             }
-            testBoard.resetBoard(this);
+            console.log(k);
+            testBoard.copyBoard(this, false);
 
         }
     }
@@ -607,15 +630,54 @@ class Board {
     getMoves() {
         this.moveFinder();
         this.removeChecks();
-        console.log("moves found");
     }
-    makeMove(move, color=false){
+
+    moveInput(pos1, pos2){
+        console.log('move received');
+        this.getMoves();
+
+        let posInit = {
+            col: -1,
+            row: -1
+        };
+        let posFinal = {
+            col: -1,
+            row: -1
+        };
+
+        posInit.col = this.alphabet.indexOf(pos1[0]);
+        posInit.row = this.inverseRow.indexOf(Number(pos1[1]));
+
+        posFinal.col = this.alphabet.indexOf(pos2[0]);
+        posFinal.row = this.inverseRow.indexOf(Number(pos2[1]));
+
+        console.log(posInit, posFinal);
+
+        let moves;
+        if (this.turn.color === "white"){
+            moves = this.whiteMoves;
+        }else{
+            moves = this.blackMoves;
+        }
+        console.log(this);
+        for (let i in moves){
+            if((moves[i].piece.pos.col === posInit.col && moves[i].piece.pos.row === posInit.row) &&
+                (moves[i].col === posFinal.col && moves[i].row === posFinal.row)){
+                console.log(moves[i]);
+                this.makeMove(moves[i]);
+                break;
+            }
+        }
+    }
+
+    makeMove(move, color="none"){
         let pieces, oppPieces, cRow;
         let col = move.col;
         let row = move.row;
         let prevPos = move.piece.pos;
-
-        if (color){
+        this.appendMoveList(move);
+        console.log(this.prevMoves);
+        if (color !== "none"){
             if (color === "white") {
                 pieces = this.whitePieces;
                 oppPieces = this.blackPieces;
@@ -639,7 +701,7 @@ class Board {
         if(move.capture){
             for (let i in oppPieces){
                 if (oppPieces[i] === move.capture) {
-                    this.board[move.capture.col][move.capture.row] = false;
+                    this.board[move.capture.pos.col][move.capture.pos.row].piece = false;
                     oppPieces.splice(i, 1);
                     break;
                 }
@@ -654,7 +716,7 @@ class Board {
                         pieces[i].prevPos.row = cRow;
                         pieces[i].pos.col = 5;
                         pieces[i].pos.row = cRow;
-                        this.board[5][cRow].piece = Object.assign(Object.create(Object.getPrototypeOf(pieces[i])), pieces[i]);
+                        this.board[5][cRow].piece = pieces[i];
                         this.board[7][cRow].piece = false;
                         break;
                     }
@@ -667,7 +729,7 @@ class Board {
                         pieces[i].prevPos.row = cRow;
                         pieces[i].pos.col = 3;
                         pieces[i].pos.row = cRow;
-                        this.board[3][cRow].piece = Object.assign(Object.create(Object.getPrototypeOf(pieces[i])), pieces[i]);
+                        this.board[3][cRow].piece = pieces[i];
                         this.board[0][cRow].piece = false;
                         break;
                     }
@@ -675,17 +737,30 @@ class Board {
             }
         }
         for (let i in pieces) {
+            console.log(pieces[i]);
             if (pieces[i] === move.piece) {
+                console.log("here");
+                this.board[prevPos.col][prevPos.row].piece = false;
+                pieces[i].prevPos = Object.assign(Object.create(Object.getPrototypeOf(prevPos)), prevPos);
                 pieces[i].pos.col = col;
                 pieces[i].pos.row = row;
-                pieces[i].prevPos = Object.create(prevPos);
                 pieces[i].firstMove = false;
-                this.board[col][row].piece = Object.assign(Object.create(Object.getPrototypeOf(pieces[i])), pieces[i]);
-                this.board[prevPos.col][prevPos.row].piece = false;
+                this.board[col][row].piece = pieces[i];
                 break;
             }
         }
+        if (this.turn.color === "white"){
+            this.turn.color = "black";
+        }else{
+            this.turn.color = "white";
+            this.turn.move ++;
+        }
+        if (this.displayBoard) {
+            this.drawBoard();
+        }
+        console.log(this.board);
     }
+
     appendMoveList(move){
         this.prevMoves.unshift(new PrevMove(move, this.turn));
     }
@@ -710,12 +785,12 @@ class Piece {
 
 class Move {
     constructor(piece, col, row, capture = false, check = false, checkMate = false, staleMate = false, castle = false) {
-        this.piece = Object.assign(Object.create(Object.getPrototypeOf(piece)), piece);
+        this.piece = piece;
         this.col = col;
         this.row = row;
         this.castle = castle;
         if (capture) {
-            this.capture = Object.assign(Object.create(Object.getPrototypeOf(capture)), capture)
+            this.capture = capture;
         }
         if (check) {
             this.check = '+';
@@ -736,9 +811,18 @@ class PrevMove {
     constructor(move, turn){
         this.move = Object.assign(Object.create(Object.getPrototypeOf(move)), move);
         this.turn = turn;
+        this.alphabet =  this.alphabet = ["a", "b", "c", "d", "e", "f", "g", "h"];
         this.text = "";
     }
     createText(){
-
+        let piece, capture, col, row, prevPos, check;
+        piece = this.move.piece.piece;
+        if (this.move.capture){
+            if (this.move.capture.piece === "P"){
+                capture = "x";
+            }else{
+                capture = "x" + this.move.capture.piece;
+            }
+        }
     }
 }
